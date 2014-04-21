@@ -1,4 +1,4 @@
-package com.example.Media;
+package com.example.Media.Interface;
 
 import android.media.MediaPlayer;
 /**
@@ -8,6 +8,10 @@ import android.media.MediaPlayer;
  */
 public interface IMediaStateListen {
 	void onLVideoSizeChanged(MediaPlayer mPlayer, int width, int height);
+	
+	void onLIdel(MediaPlayer mPlayer);
+	
+	void onLInitialized(MediaPlayer mPlayer);
 	
 	void onLPreparing(MediaPlayer mPlayer);
 

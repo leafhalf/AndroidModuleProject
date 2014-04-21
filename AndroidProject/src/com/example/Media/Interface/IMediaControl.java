@@ -1,8 +1,10 @@
-package com.example.Media;
+package com.example.Media.Interface;
 
 import java.util.Map;
 
+import android.content.Context;
 import android.media.MediaPlayer;
+import android.net.Uri;
 
 /**
  * Interface about playback operation it is around by the playback
@@ -34,8 +36,9 @@ public interface IMediaControl {
 	 *            when the path is an http or https request,set the request
 	 *            parameter,if there is no data input,set it null
 	 */
-	void LinsetDataSource(MediaPlayer mPlayer, String path,
-			Map<String, String> head);
+	void LinsetDataSource(Context context,MediaPlayer mPlayer,Uri uri,
+			Map<String, String> headers);
+	void LinsetDataSource(Context context, MediaPlayer mPlayer,int resID);
 
 	/**
 	 * it is an block API which able take much time to return,if it,this may
@@ -100,29 +103,35 @@ public interface IMediaControl {
 	void Linstop(MediaPlayer mPlayer);
 
 	/**
+	 * Register a callback to be invoked when the end of a media source has been
+	 * reached during playback.
+	 * 
+	 * @param mPlayer
+	 */
+	void LinplaybackComplete(MediaPlayer mPlayer);
+
+	/**
+	 * Register a callback to be invoked when an error has happened during an
+	 * asynchronous operation.
+	 * 
+	 * @param mPlayer
+	 */
+	void LinError(MediaPlayer mPlayer);
+
+	/**
+	 * Register a callback to be invoked when the status of a network stream's
+	 * buffer has changed
+	 * 
+	 * @param mPlayer
+	 */
+	void LinbufferingUpdate(MediaPlayer mPlayer);
+
+	/**
 	 * end the playback and could be used in any state this API could be used in
 	 * any state
 	 * 
 	 * @param mPlayer
 	 */
 	void Linrelease(MediaPlayer mPlayer);
-
-	/**
-	 * Gets the current playback position.it only could not be used in Error
-	 * state.
-	 * 
-	 * @return the current position in milliseconds
-	 */
-	int LingetCurrentPosition(MediaPlayer mPlayer);
-
-	/**
-	 * Gets the duration of the file.it only could not be used in Idle,
-	 * Initialized or Error state
-	 * 
-	 * @param mPlayer
-	 * @return the duration in milliseconds, if no duration is available (for
-	 *         example, if streaming live content), -1 is returned.
-	 */
-	int LingetDuration(MediaPlayer mPlayer);
 
 }
