@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.example.Media.MediaPlayerHelper.ILinCompletedListen;
 import com.example.Media.bean.MediaInfo;
+import com.example.Utils.MediaUtils;
 
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -135,7 +136,6 @@ public class MediaControl implements ILinCompletedListen{
 				CUR_LOCATION = 0;
 			}
 			if (mPlayer != null) {
-				MediaPlayerHelper.Linreset(mPlayer);
 				Play(CUR_LOCATION);
 				return true;
 			}
@@ -153,7 +153,6 @@ public class MediaControl implements ILinCompletedListen{
 				CUR_LOCATION = mInfos.size()-1;
 			}
 			if (mPlayer != null) {
-				MediaPlayerHelper.Linreset(mPlayer);
 				Play(CUR_LOCATION);
 				return true;
 			}
@@ -214,7 +213,7 @@ public class MediaControl implements ILinCompletedListen{
 			Next();
 			break;
 		case PLAY_RANDOM_LOOP:
-			
+			Play(MediaUtils.getRandom(mInfos.size()));
 			break;
 		default:
 			break;
