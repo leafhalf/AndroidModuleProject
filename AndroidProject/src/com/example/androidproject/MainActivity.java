@@ -28,11 +28,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnClickListener{
 
 	private Button mbtn;
 	private Context mContext;
-	private Button mbtn2;
+	private Button mbtn2,mbtn3,mbtn4,mbtn5;
 	private ImageView mView;
 	private TextView mText;
 	private String TAG = "MainActivity";
@@ -44,95 +44,18 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		mbtn = (Button) findViewById(R.id.click);
 		mbtn2 = (Button) findViewById(R.id.click2);
+		mbtn3 = (Button) findViewById(R.id.click3);
+		mbtn4 = (Button) findViewById(R.id.click4);
+		mbtn5 = (Button) findViewById(R.id.click5);
 		mView = (ImageView) findViewById(R.id.mimage);
 		mContext = this;
 		mlists=new ArrayList<MediaInfo>();
-		mbtn.setOnClickListener(new OnClickListener() {
+		mbtn.setOnClickListener(this);
 
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				CustomDialog mCustomDialog = new CustomDialog(mContext,
-						new OnCustomDialogListen() {
-
-							@Override
-							public void DialogEnd() {
-								// TODO Auto-generated method stub
-
-							}
-
-							@Override
-							public void DialogBegin() {
-								// TODO Auto-generated method stub
-
-							}
-						});
-				mCustomDialog.setBoardImage(R.drawable.ic_launcher);
-				mCustomDialog.setContentView(R.layout.activity_main);
-				mCustomDialog.setTittleView(R.layout.activity_main);
-				mCustomDialog.setDialogSize(200, 300);
-				mCustomDialog.show();
-			}
-		});
-
-		mbtn2.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-//				Bitmap mBitmap = BitmapFactory.decodeResource(getResources(),
-//						R.drawable.me_fx_icon);
-//				Bitmap mbitmap2 = ImageUtils.RoundImage(mBitmap);
-//				Bitmap mbitmap3 = ImageUtils.addRoundBoard(mbitmap2, Color.RED,
-//						3.0f);
-//				// mView.setBackgroundDrawable(new BitmapDrawable(mbitmap2));
-//				mView.setImageBitmap(mbitmap3);
-				ContentResolver mContentResolver = mContext.getContentResolver();
-				Cursor mCursor = mContentResolver.query(
-						MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
-						null);
-				// if(mCursor.moveToFirst()){
-				StringBuffer mBuffer = new StringBuffer();
-				String[] mNames = mCursor.getColumnNames();
-				for (String name : mNames) {
-					mBuffer.append(name + "--");
-				}
-				mBuffer.append("\n");
-				Log.i(TAG, "movetofirst:" + String.valueOf(mCursor.getCount()));
-				if (mCursor.moveToFirst()) {
-
-					do {
-						MediaInfo mInfo=new MediaInfo();
-						String mname;
-						mname = mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.TITLE));
-						mBuffer.append(mname + "--");
-						mname = mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.DATA));
-						mBuffer.append(mname + "--");
-						mname = mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.SIZE));
-						mBuffer.append(mname + "--");
-						mname = mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.DURATION));
-						mBuffer.append(mname + "--");
-						mname = mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media._ID));
-						mBuffer.append(mname + "--");
-						mBuffer.append("\n");
-						mInfo.setTITLE(mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.TITLE)));
-						mInfo.setDATA(mCursor.getString(mCursor
-								.getColumnIndex(MediaStore.Audio.Media.DATA)));
-						mlists.add(mInfo);
-					} while (mCursor.moveToNext());
-				}
-				MediaControl.initMediaPlay(mContext, mlists);
-				MediaControl.Play(0);
-				mText.setText(mBuffer.toString());
-				
-			}
-		});
+		mbtn2.setOnClickListener(this);
+		mbtn3.setOnClickListener(this);
+		mbtn4.setOnClickListener(this);
+		mbtn5.setOnClickListener(this);
 
 		mText = (TextView) findViewById(R.id.mtext);
 		MediaDatabaseTest();
@@ -181,6 +104,75 @@ public class MainActivity extends Activity {
 		}
 		mText.setText(mBuffer.toString());
 		// }
+	}
+	
+	public void iniMusic(){
+		ContentResolver mContentResolver = mContext.getContentResolver();
+		Cursor mCursor = mContentResolver.query(
+				MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
+				null);
+		// if(mCursor.moveToFirst()){
+		StringBuffer mBuffer = new StringBuffer();
+		String[] mNames = mCursor.getColumnNames();
+		for (String name : mNames) {
+			mBuffer.append(name + "--");
+		}
+		mBuffer.append("\n");
+		Log.i(TAG, "movetofirst:" + String.valueOf(mCursor.getCount()));
+		if (mCursor.moveToFirst()) {
+
+			do {
+				MediaInfo mInfo=new MediaInfo();
+				String mname;
+				mname = mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.TITLE));
+				mBuffer.append(mname + "--");
+				mname = mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA));
+				mBuffer.append(mname + "--");
+				mname = mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.SIZE));
+				mBuffer.append(mname + "--");
+				mname = mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.DURATION));
+				mBuffer.append(mname + "--");
+				mname = mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media._ID));
+				mBuffer.append(mname + "--");
+				mBuffer.append("\n");
+				mInfo.setTITLE(mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.TITLE)));
+				mInfo.setDATA(mCursor.getString(mCursor
+						.getColumnIndex(MediaStore.Audio.Media.DATA)));
+				mlists.add(mInfo);
+			} while (mCursor.moveToNext());
+		}
+		MediaControl.initMediaPlay(mContext, mlists);
+		mText.setText(mBuffer.toString());
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.click:
+			MediaControl.Previous();
+			break;
+		case R.id.click2:
+            MediaControl.Play(MediaControl.getCurrentLocation());
+			break;
+		case R.id.click3:
+			MediaControl.Pause();
+			break;
+		case R.id.click4:
+			MediaControl.Next();
+			break;
+		case R.id.click5:
+			iniMusic();
+			break;
+		default:
+			break;
+		}
 	}
 
 }

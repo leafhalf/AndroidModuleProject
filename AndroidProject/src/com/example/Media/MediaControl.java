@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.example.Media.MediaPlayerHelper.ILinCompletedListen;
 import com.example.Media.bean.MediaInfo;
 
 import android.content.Context;
@@ -18,7 +19,7 @@ import android.net.Uri;
  * @author Administrator
  * 
  */
-public class MediaControl {
+public class MediaControl implements ILinCompletedListen{
 
 	private static String TAG = "MediaControl";
 
@@ -26,12 +27,15 @@ public class MediaControl {
 	private static MediaControl mediaControl;
 	private static MediaPlayer mPlayer;
 	private static Context mContext;
-	private static int CUR_LOCATION = -1;
+	public static int CUR_LOCATION =0;
+	private static int RANDOM_NUM;
 
 	// LOOP MODE
-	private static int MODE_SINGLE_LOOP = 0;
-	private static int MODE_ORDER_LOOP = 1;
-	private static int MODE_RANDOM_LOOP = 2;
+	public static final int PLAY_SINGLE_LOOP = 0;
+	public static final int PLAY_ORDER = 1;
+	public static final int PLAY_ORDER_LOOP = 2;
+	public static final int PLAY_RANDOM_LOOP = 3;
+	public static int CURRENT_PLAY_MODE = 0;
 
 	public static MediaControl getInstance() {
 		if (mediaControl != null)
@@ -45,9 +49,10 @@ public class MediaControl {
 			mediaControl = new MediaControl();
 		if (mPlayer == null)
 			mPlayer = new MediaPlayer();
-		LinMediaPlayerHelper.LinbufferingUpdate(mPlayer);
-		LinMediaPlayerHelper.LinError(mPlayer);
-		LinMediaPlayerHelper.LinplaybackComplete(mPlayer);
+		MediaPlayerHelper.setPlayLoop(PLAY_SINGLE_LOOP,getInstance());
+		MediaPlayerHelper.LinbufferingUpdate(mPlayer);
+		MediaPlayerHelper.LinError(mPlayer);
+		MediaPlayerHelper.LinplaybackComplete(mPlayer);
 		mContext = context;
 		setPlayList(playlist);
 	}
@@ -72,30 +77,34 @@ public class MediaControl {
 					Log.i(TAG, "current play is not exist");
 					return;
 				} else {
-					switch (mInfos.get(location).getCUR_TYPE()) {
-					case MediaInfo.TYPE_URI:
-						LinMediaPlayerHelper.LinsetDataSource(mContext,
-								mPlayer,
-								Uri.parse(mInfos.get(location).getDATA()),
-								mInfos.get(location).getHEADER());
-						break;
-					case MediaInfo.TYPE_ID:
-						LinMediaPlayerHelper.LinsetDataSource(mContext,
-								mPlayer, Integer.parseInt(mInfos.get(location)
-										.getDATA()));
-						break;
-					default:
-						break;
-					}
-					LinMediaPlayerHelper.LinprepareAsync(mPlayer);
-					mPlayer.setOnPreparedListener(new OnPreparedListener() {
-
-						@Override
-						public void onPrepared(MediaPlayer mp) {
-							// TODO Auto-generated method stub
-							LinMediaPlayerHelper.Linstart(mPlayer);
+					if (MediaPlayerHelper.CURRENT_MEDIA_STATE != MediaPlayerHelper.MEDIA_STATE_PAUSED) {
+						switch (mInfos.get(location).getCUR_TYPE()) {
+						case MediaInfo.TYPE_URI:
+							MediaPlayerHelper.LinsetDataSource(mContext,
+									mPlayer,
+									Uri.parse(mInfos.get(location).getDATA()),
+									mInfos.get(location).getHEADER());
+							break;
+						case MediaInfo.TYPE_ID:
+							MediaPlayerHelper.LinsetDataSource(mContext,
+									mPlayer, Integer.parseInt(mInfos.get(
+											location).getDATA()));
+							break;
+						default:
+							break;
 						}
-					});
+						MediaPlayerHelper.LinprepareAsync(mPlayer);
+						mPlayer.setOnPreparedListener(new OnPreparedListener() {
+
+							@Override
+							public void onPrepared(MediaPlayer mp) {
+								// TODO Auto-generated method stub
+								MediaPlayerHelper.Linstart(mPlayer);
+							}
+						});
+					} else {
+						MediaPlayerHelper.Linstart(mPlayer);    
+					}
 				}
 			} else {
 				Log.i(TAG, "can not play an empty play list");
@@ -107,8 +116,8 @@ public class MediaControl {
 
 	public static int Pause() {
 		try {
-			if (mPlayer == null) {
-				LinMediaPlayerHelper.Linpause(mPlayer);
+			if (mPlayer != null) {
+				MediaPlayerHelper.Linpause(mPlayer);
 				return mPlayer.getCurrentPosition();
 			}
 		} catch (Exception e) {
@@ -126,7 +135,7 @@ public class MediaControl {
 				CUR_LOCATION = 0;
 			}
 			if (mPlayer != null) {
-				LinMediaPlayerHelper.Linreset(mPlayer);
+				MediaPlayerHelper.Linreset(mPlayer);
 				Play(CUR_LOCATION);
 				return true;
 			}
@@ -141,10 +150,10 @@ public class MediaControl {
 			if ((CUR_LOCATION - 1) >= 0) {
 				CUR_LOCATION--;
 			} else {
-				CUR_LOCATION = mInfos.size();
+				CUR_LOCATION = mInfos.size()-1;
 			}
 			if (mPlayer != null) {
-				LinMediaPlayerHelper.Linreset(mPlayer);
+				MediaPlayerHelper.Linreset(mPlayer);
 				Play(CUR_LOCATION);
 				return true;
 			}
@@ -155,12 +164,12 @@ public class MediaControl {
 	}
 
 	public static void setLoopMode(int LOOP_MODE) {
-
+           
 	}
 
 	public static void Speed(int Location) {
 		try {
-			LinMediaPlayerHelper.LinseekTo(mPlayer, Location);
+			MediaPlayerHelper.LinseekTo(mPlayer, Location);
 		} catch (Exception e) {
 			Log.i(TAG, "Speed error:" + e.getMessage());
 		}
@@ -169,7 +178,7 @@ public class MediaControl {
 
 	public static void fallBack(int Location) {
 		try {
-			LinMediaPlayerHelper.LinseekTo(mPlayer, Location);
+			MediaPlayerHelper.LinseekTo(mPlayer, Location);
 		} catch (Exception e) {
 			Log.i(TAG, "fallBack error:" + e.getMessage());
 		}
@@ -177,10 +186,40 @@ public class MediaControl {
 
 	public static void destoryMediaplay() {
 		try {
-			LinMediaPlayerHelper.Linrelease(mPlayer);
+			MediaPlayerHelper.Linrelease(mPlayer);
 		} catch (Exception e) {
 			Log.i(TAG, "destoryMediaplay error:" + e.getMessage());
 		}
 	}
+	
+	public static int getCurrentLocation(){
+		return CUR_LOCATION;
+	}
+
+	@Override
+	public void OnLinCompleted(MediaPlayer mPlayer, int LOOP_MODE) {
+		// TODO Auto-generated method stub
+		switch (LOOP_MODE) {
+		case PLAY_SINGLE_LOOP:
+			Play(CUR_LOCATION);
+			break;
+		case PLAY_ORDER:
+			if((CUR_LOCATION+1)<(mInfos.size())){
+				Next();
+			}else{
+				Log.i(TAG,"PLAY_ORDER FINISH");
+			}
+			break;
+		case PLAY_ORDER_LOOP:
+			Next();
+			break;
+		case PLAY_RANDOM_LOOP:
+			
+			break;
+		default:
+			break;
+		}
+	}
+
 
 }

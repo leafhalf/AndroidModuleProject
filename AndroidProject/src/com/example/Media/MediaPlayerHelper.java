@@ -24,22 +24,25 @@ import android.util.Log;
  * @author Lin
  * 
  */
-public class LinMediaPlayerHelper {
+public class MediaPlayerHelper {
 
 	private static String TAG = "MediaControlHelper";
 
-	private static int MEDIA_STATE_IDLE = 0;
-	private static int MEDIA_STATE_INITIALIZED = 1;
-	private static int MEDIA_STATE_PREPARING = 2;
-	private static int MEDIA_STATE_PREPARED = 3;
-	private static int MEDIA_STATE_STARTED = 4;
-	private static int MEDIA_STATE_PAUSED = 5;
-	private static int MEDIA_STATE_STOPPED = 6;
-	private static int MEDIA_STATE_PLAYBACKCOMPLETED = 7;
-	private static int MEDIA_STATE_ERROR;
-	private static int CURRENT_MEDIA_STATE = -1;
+	public static final int MEDIA_STATE_IDLE = 0;
+	public static final int MEDIA_STATE_INITIALIZED = 1;
+	public static final int MEDIA_STATE_PREPARING = 2;
+	public static final int MEDIA_STATE_PREPARED = 3;
+	public static final int MEDIA_STATE_STARTED = 4;
+	public static final int MEDIA_STATE_PAUSED = 5;
+	public static final int MEDIA_STATE_STOPPED = 6;
+	public static final int MEDIA_STATE_PLAYBACKCOMPLETED = 7;
+	public static final int MEDIA_STATE_ERROR = 8;
+	public static int CURRENT_MEDIA_STATE = -1;
+	
+	private static int CURRENT_PLAY_MODE=0;
 
 	private static IMediaStateListen mStateListen;
+	private static ILinCompletedListen mCompletedListen;
 
 	public static IMediaStateListen getmStateListen() {
 		return mStateListen;
@@ -149,6 +152,7 @@ public class LinMediaPlayerHelper {
 	public static void Linprepare(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
 		try {
+			mPlayer.setLooping(true);
 			mPlayer.prepare();
 			CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARED;
 			Log.i(TAG, "mediaplay prepared");
@@ -282,18 +286,29 @@ public class LinMediaPlayerHelper {
 	 */
 	public static void LinplaybackComplete(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
-		mPlayer.setOnCompletionListener(new OnCompletionListener() {
+		try {
+			mPlayer.setOnCompletionListener(new OnCompletionListener() {
 
-			@Override
-			public void onCompletion(MediaPlayer mp) {
-				// TODO Auto-generated method stub
-				CURRENT_MEDIA_STATE = MEDIA_STATE_PLAYBACKCOMPLETED;
-				Log.i(TAG, "mediaplay play completed");
-				if (mStateListen != null) {
-					mStateListen.onLCompletion(mp);
+				@Override
+				public void onCompletion(MediaPlayer mp) {
+					// TODO Auto-generated method stub
+					CURRENT_MEDIA_STATE = MEDIA_STATE_PLAYBACKCOMPLETED;
+					Log.i(TAG, "mediaplay play completed");
+					if (mStateListen != null) {
+						mStateListen.onLCompletion(mp);
+						if (mCompletedListen != null) {
+							mCompletedListen.OnLinCompleted(mp,CURRENT_PLAY_MODE);
+						}
+					}
 				}
-			}
-		});
+			});
+		} catch (Exception e) {
+           Log.i(TAG,"LinplaybackComplete error:"+e.getMessage());
+		}
+	}
+
+	public interface ILinCompletedListen {
+		void OnLinCompleted(MediaPlayer mPlayer,int LOOP_MODE);
 	}
 
 	/**
@@ -385,6 +400,12 @@ public class LinMediaPlayerHelper {
 		if (mStateListen != null) {
 			mStateListen.OnLEnd();
 		}
+	}
+
+	public static void setPlayLoop(int LOOP_MODE,
+			ILinCompletedListen lCompletedListen) {
+		CURRENT_PLAY_MODE=LOOP_MODE;
+		mCompletedListen = lCompletedListen;
 	}
 
 }
