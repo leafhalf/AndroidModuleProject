@@ -38,8 +38,8 @@ public class MediaPlayerHelper {
 	public static final int MEDIA_STATE_PLAYBACKCOMPLETED = 7;
 	public static final int MEDIA_STATE_ERROR = 8;
 	public static int CURRENT_MEDIA_STATE = -1;
-	
-	private static int CURRENT_PLAY_MODE=0;
+
+	private static int CURRENT_PLAY_MODE = 0;
 
 	private static IMediaStateListen mStateListen;
 	private static ILinCompletedListen mCompletedListen;
@@ -58,7 +58,7 @@ public class MediaPlayerHelper {
 	 * 
 	 * @param mPlayer
 	 */
-	public static void Linreset(MediaPlayer mPlayer) {
+	private static void Linreset(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
 		mPlayer.reset();
 		CURRENT_MEDIA_STATE = MEDIA_STATE_IDLE;
@@ -85,7 +85,9 @@ public class MediaPlayerHelper {
 			Uri uri, Map<String, String> headers) {
 		// TODO Auto-generated method stub
 		try {
-
+			if (CURRENT_MEDIA_STATE != MEDIA_STATE_IDLE) {
+				Linreset(mPlayer);
+			}
 			if (android.os.Build.VERSION.SDK_INT >= 14) {
 				mPlayer.setDataSource(context, uri, headers);
 			} else {
@@ -119,7 +121,11 @@ public class MediaPlayerHelper {
 	public static void LinsetDataSource(Context context, MediaPlayer mPlayer,
 			int resID) {
 		// TODO Auto-generated method stub
+
 		try {
+			if (CURRENT_MEDIA_STATE != MEDIA_STATE_IDLE) {
+				Linreset(mPlayer);
+			}
 			AssetFileDescriptor afd = context.getResources().openRawResourceFd(
 					resID);
 			if (afd == null)
@@ -152,12 +158,18 @@ public class MediaPlayerHelper {
 	public static void Linprepare(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
 		try {
-			mPlayer.setLooping(true);
-			mPlayer.prepare();
-			CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARED;
-			Log.i(TAG, "mediaplay prepared");
-			if (mStateListen != null) {
-				mStateListen.onLPrepared(mPlayer);
+			if (CURRENT_MEDIA_STATE == MEDIA_STATE_INITIALIZED
+					|| CURRENT_MEDIA_STATE == MEDIA_STATE_STOPPED) {
+
+				mPlayer.prepare();
+				CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARED;
+				Log.i(TAG, "mediaplay prepared");
+				if (mStateListen != null) {
+					mStateListen.onLPrepared(mPlayer);
+				}
+			} else {
+				Log.i(TAG,
+						"can not prepare the mediaplay because of the unsupport state");
 			}
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
@@ -181,21 +193,27 @@ public class MediaPlayerHelper {
 	 */
 	public static void LinprepareAsync(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
-		mPlayer.prepareAsync();
-		CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARING;
-		Log.i(TAG, "mediaplay preparing...");
-		if (mStateListen != null) {
-			mStateListen.onLPreparing(mPlayer);
-			mPlayer.setOnPreparedListener(new OnPreparedListener() {
+		if (CURRENT_MEDIA_STATE == MEDIA_STATE_INITIALIZED
+				|| CURRENT_MEDIA_STATE == MEDIA_STATE_STOPPED) {
+			mPlayer.prepareAsync();
+			CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARING;
+			Log.i(TAG, "mediaplay preparing...");
+			if (mStateListen != null) {
+				mStateListen.onLPreparing(mPlayer);
+				mPlayer.setOnPreparedListener(new OnPreparedListener() {
 
-				@Override
-				public void onPrepared(MediaPlayer mp) {
-					// TODO Auto-generated method stub
-					CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARED;
-					Log.i(TAG, "mediaplay prepared");
-					mStateListen.onLPrepared(mp);
-				}
-			});
+					@Override
+					public void onPrepared(MediaPlayer mp) {
+						// TODO Auto-generated method stub
+						CURRENT_MEDIA_STATE = MEDIA_STATE_PREPARED;
+						Log.i(TAG, "mediaplay prepared");
+						mStateListen.onLPrepared(mp);
+					}
+				});
+			}
+		} else {
+			Log.i(TAG,
+					"can not prepare the mediaplay because of the unsupport state");
 		}
 	}
 
@@ -212,11 +230,19 @@ public class MediaPlayerHelper {
 	 */
 	public static void Linstart(MediaPlayer mPlayer) {
 		// TODO Auto-generated method stub
-		mPlayer.start();
-		CURRENT_MEDIA_STATE = MEDIA_STATE_STARTED;
-		Log.i(TAG, "mediaplay started");
-		if (mStateListen != null) {
-			mStateListen.onLStarted(mPlayer);
+		if (CURRENT_MEDIA_STATE == MEDIA_STATE_PREPARED
+				|| CURRENT_MEDIA_STATE == MEDIA_STATE_STARTED
+				|| CURRENT_MEDIA_STATE == MEDIA_STATE_PAUSED
+				|| CURRENT_MEDIA_STATE == MEDIA_STATE_PLAYBACKCOMPLETED) {
+			mPlayer.start();
+			CURRENT_MEDIA_STATE = MEDIA_STATE_STARTED;
+			Log.i(TAG, "mediaplay started");
+			if (mStateListen != null) {
+				mStateListen.onLStarted(mPlayer);
+			}
+		} else {
+			Log.i(TAG,
+					"can not start the mediaplay,mediaplay is in an unsupport state");
 		}
 	}
 
@@ -297,18 +323,19 @@ public class MediaPlayerHelper {
 					if (mStateListen != null) {
 						mStateListen.onLCompletion(mp);
 						if (mCompletedListen != null) {
-							mCompletedListen.OnLinCompleted(mp,CURRENT_PLAY_MODE);
+							mCompletedListen.OnLinCompleted(mp,
+									CURRENT_PLAY_MODE);
 						}
 					}
 				}
 			});
 		} catch (Exception e) {
-           Log.i(TAG,"LinplaybackComplete error:"+e.getMessage());
+			Log.i(TAG, "LinplaybackComplete error:" + e.getMessage());
 		}
 	}
 
 	public interface ILinCompletedListen {
-		void OnLinCompleted(MediaPlayer mPlayer,int LOOP_MODE);
+		void OnLinCompleted(MediaPlayer mPlayer, int LOOP_MODE);
 	}
 
 	/**
@@ -404,7 +431,7 @@ public class MediaPlayerHelper {
 
 	public static void setPlayLoop(int LOOP_MODE,
 			ILinCompletedListen lCompletedListen) {
-		CURRENT_PLAY_MODE=LOOP_MODE;
+		CURRENT_PLAY_MODE = LOOP_MODE;
 		mCompletedListen = lCompletedListen;
 	}
 
