@@ -1,47 +1,77 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:custom="http://schemas.android.com/apk/res/com.example.androidproject"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+    android:layout_height="match_parent" >
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@drawable/custom_dialog_bg" />
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context=".MainActivity" >
 
-        <Button
+        <ImageView
             android:layout_width="match_parent"
-            android:id="@+id/click"
-            android:layout_height="wrap_content"
-            android:text="Click" />
+            android:layout_height="100dp"
+            android:background="@drawable/custom_dialog_bg" />
 
-        <Button
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/click2"
-            android:text="Click" />
-        <ImageView 
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/mimage"
-            android:src="@drawable/me_fx_icon"/>
-        <com.example.customview.RoundImageView 
-            android:layout_width="100dp"
-            android:layout_height="100dp"      
-            custom:Board_Color="#00FF00"
-            custom:Board_Width="3.0"
-            android:src="@drawable/me_fx_icon"
-            />
-    </LinearLayout>
+            android:orientation="vertical" >
 
-</RelativeLayout>
+            <Button
+                android:id="@+id/click5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="init" />
+
+            <Button
+                android:id="@+id/click"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="pre" />
+
+            <Button
+                android:id="@+id/click2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="play" />
+
+            <Button
+                android:id="@+id/click3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="pause" />
+
+            <Button
+                android:id="@+id/click4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="next" />
+
+            <ImageView
+                android:id="@+id/mimage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/me_fx_icon" />
+
+            <com.example.customview.RoundImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/me_fx_icon"
+                custom:Board_Color="#00FF00"
+                custom:Board_Width="3.0" />
+
+            <TextView
+                android:id="@+id/mtext"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="media" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</ScrollView>
